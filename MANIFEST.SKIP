@@ -20,4 +20,5 @@
 ^\.git/
 \.sw[po]$
 sample.pl
-
+MYMETA.json
+MYMETA.yml
