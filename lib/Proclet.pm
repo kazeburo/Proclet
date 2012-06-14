@@ -156,7 +156,7 @@ Proclet - minimalistic Supervisor
 
 =head1 DESCRIPTION
 
-Proclet is minimalistic Supervisor, fork and manage services from one perl script.
+Proclet is minimalistic Supervisor, fork and manage many services from one perl script.
 
 =head1 METHOD
 
