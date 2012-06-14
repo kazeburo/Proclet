@@ -19,3 +19,5 @@
 ^\.shipit$
 ^\.git/
 \.sw[po]$
+sample.pl
+
