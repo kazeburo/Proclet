@@ -148,7 +148,7 @@ Proclet - minimalistic Supervisor
 
   $proclet->service(
       code => sub {
-          exec('/usr/bin/memcached');
+          exec('/usr/bin/memcached','-p','11211');
       },
   );
 
