@@ -1,6 +1,14 @@
 use strict;
-use Test::More tests => 6;
+use Test::More;
 use Proclet;
+
+my $ps = `LC_ALL=C command ps -e -o ppid,pid,command`;
+if ( $? == -1 || $? & 127 ) {
+    plan skip_all => "command ps failed";
+}
+else {
+    plan tests => 6;
+}
 
 my $pid = fork();
 
