@@ -1,6 +1,5 @@
 use strict;
 use Test::More tests => 6;
-use Test::SharedFork;
 use Proclet;
 
 my $pid = fork();
