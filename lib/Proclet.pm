@@ -193,7 +193,7 @@ Masahiro Nagano E<lt>kazeburo {at} gmail.comE<gt>
 =head1 SEE ALSO
 
 L<Proc::Launcher::Manager>, related module
-L<Parallel::Prefork>, Proclet used internaly
+L<Parallel::Prefork>, Proclet used internally
 
 =head1 LICENSE
 
