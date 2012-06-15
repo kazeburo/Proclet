@@ -44,6 +44,7 @@ for (1..2) {
     my $sleep3 = 0;
 
     for my $line ( split /\n/, $ps ) {
+        $line =~ s!^\s+!!;
         next if $line =~ m/^\D/;
         my ($ppid, $cpid, $command) = split /\s+/, $line, 3;
         next if ( $ppid != $pid && $cpid != $pid);

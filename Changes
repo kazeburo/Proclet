@@ -1,7 +1,10 @@
 Revision history for Perl extension Proclet
 
+0.04    Thu Jun 15 02:09:20 2012
+        - fixed test. remove whitespaces at begining of a line
+
 0.03    Thu Jun 15 02:09:20 2012
-        - More ixed test.
+        - More fixed test.
 
 0.02    Thu Jun 14 23:13:17 2012
         - Fixed test. Check `ps`
