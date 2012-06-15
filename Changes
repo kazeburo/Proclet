@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.05    Fri Jun 15 15:33:11 2012
+        - fixed test. using ps -A instead of '-e'. -e means 'print enviroment value' in FreeBSD
+
 0.04    Thu Jun 15 02:09:20 2012
         - fixed test. remove whitespaces at begining of a line
 

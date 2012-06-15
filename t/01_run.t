@@ -2,7 +2,7 @@ use strict;
 use Test::More;
 use Proclet;
 
-my $ps = `LC_ALL=C command ps -e -o ppid,pid,command`;
+my $ps = `LC_ALL=C command ps -A -o ppid,pid,command`;
 if ( $? == -1 || $? >> 8 != 0 ) {
     plan skip_all => "command ps failed";
     exit;
@@ -19,14 +19,14 @@ if ( $pid == 0 ) {
     my $proclet = Proclet->new;
     $proclet->service(
         code => sub {
-            local $0 = "$0_sp2plet";
+            $0 = "$0_sp2plet";
             sleep 6;
         },
         worker => 2
     );
     $proclet->service(
         code => sub {
-            local $0 = "$0_sp3plet";
+            $0 = "$0_sp3plet";
             sleep 6;
         },
         worker => 3
@@ -37,7 +37,7 @@ if ( $pid == 0 ) {
 
 sleep 2;
 for (1..2) {
-    my $ps = `LC_ALL=C command ps -e -o ppid,pid,command`;
+    my $ps = `LC_ALL=C command ps -A -o ppid,pid,command`;
 
     my $process = 0;
     my $sleep2 = 0;
