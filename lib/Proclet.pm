@@ -15,12 +15,25 @@ subtype 'ServiceProcs'
 
 no Mouse::Util::TypeConstraints;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 has '_services' => (
     is => 'ro',
     isa => 'ArrayRef',
     default => sub { [] },
+);
+
+
+has 'spawn_interval' => (
+    is => 'ro',
+    isa => 'Int',
+    default => 0,
+);
+
+has 'err_respawn_interval' => (
+    is => 'ro',
+    isa => 'Int',
+    default => 1,
 );
 
 my $rule = Data::Validator->new(
@@ -54,6 +67,8 @@ sub run {
     my $next;
     my %pid2service;
     my $pm = Parallel::Prefork->new({
+        spawn_interval => $self->spawn_interval,
+        err_respawn_interval => $self->err_respawn_interval,
         max_workers => $max_workers,
         trap_signals => {
             map { ($_ => 'TERM') } qw/TERM HUP/
@@ -161,6 +176,24 @@ Proclet is minimalistic Supervisor, fork and manage many services from one perl 
 =head1 METHOD
 
 =over 4
+
+=item new
+
+Create instance of Proclet.
+
+Attributes are as follows:
+
+=over 4
+
+=item spawn_interval: Int
+
+interval in seconds between spawning services unless a service exits abnormally (default: 0)
+
+=item err_respawn_interval: Int
+
+number of seconds to deter spawning of services after a service exits abnormally (default: 1)
+
+=back
 
 =item service
 
