@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.07    Thu Jun 15 02:09:20 2012
+        - fixed test. for kfreebsd-gnu
+
 0.06    Mon Jul 23 15:47:15 2012
         - added spawn_interval and err_respawn_interval attributes
 

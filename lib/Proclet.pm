@@ -15,7 +15,7 @@ subtype 'ServiceProcs'
 
 no Mouse::Util::TypeConstraints;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 has '_services' => (
     is => 'ro',
