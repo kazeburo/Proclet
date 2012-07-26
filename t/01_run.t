@@ -3,8 +3,6 @@ use Test::More;
 use Proclet;
 
 my $ps = `LC_ALL=C command ps -A -o ppid,pid,command`;
-warn $ps;
-warn $$;
 if ( $? == -1 || $? >> 8 != 0 ) {
     plan skip_all => "command ps failed";
     exit;
