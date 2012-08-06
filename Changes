@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.08    Mon Aug 6 23:24:11 2012
+        - fixed test. using Parallel::Scoreboard
+          some platform doesn't support rename proc title
+
 0.07    Thu Jun 15 02:09:20 2012
         - fixed test. for kfreebsd-gnu
 
