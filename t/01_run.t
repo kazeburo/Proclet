@@ -1,19 +1,12 @@
 use strict;
 use Test::More;
 use Proclet;
+use Parallel::Scoreboard;
+use File::Temp qw/tempdir/;
 
-my $ps = `LC_ALL=C command ps -A -o ppid,pid,command`;
-if ( $? == -1 || $? >> 8 != 0 ) {
-    plan skip_all => "command ps failed";
-    exit;
-}
-elsif ( $ps !~ m!\b$$\b!s ) {
-    plan skip_all => "command ps failed: not contain self pid";
-    exit;
-}
-else {
-    plan tests => 6;
-}
+my $sb = Parallel::Scoreboard->new(
+    base_dir => tempdir( CLEANUP => 1 )
+);
 
 my $pid = fork();
 
@@ -23,14 +16,14 @@ if ( $pid == 0 ) {
     my $proclet = Proclet->new;
     $proclet->service(
         code => sub {
-            $0 = "$0_sp2plet";
+            $sb->update("sp2plet");
             sleep 6;
         },
         worker => 2
     );
     $proclet->service(
         code => sub {
-            $0 = "$0_sp3plet";
+            $sb->update("sp3plet");
             sleep 6;
         },
         worker => 3
@@ -41,24 +34,18 @@ if ( $pid == 0 ) {
 
 sleep 2;
 for (1..2) {
-    my $ps = `LC_ALL=C command ps -A -o ppid,pid,command`;
-
     my $process = 0;
     my $sleep2 = 0;
     my $sleep3 = 0;
 
-    for my $line ( split /\n/, $ps ) {
-        $line =~ s!^\s+!!;
-        next if $line =~ m/^\D/;
-        my ($ppid, $cpid, $command) = split /\s+/, $line, 3;
-        next if ( $ppid != $pid && $cpid != $pid);
-    
+    my $stats = $sb->read_all();
+    for my $pid (sort { $a <=> $b } keys %$stats) {
         $process++;
-        $sleep3++ if $command =~ m!sp3plet!;
-        $sleep2++ if $command =~ m!sp2plet!;
+        $sleep3++ if $stats->{$pid} =~ m!sp3plet!;
+        $sleep2++ if $stats->{$pid} =~ m!sp2plet!;
     }
 
-    is($process,6);
+    is($process,5);
     is($sleep2,2);
     is($sleep3,3);
     sleep 3;
@@ -66,4 +53,6 @@ for (1..2) {
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);
+
+done_testing();
 

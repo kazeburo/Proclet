@@ -11,5 +11,6 @@ tests 't/*.t';
 author_tests 'xt';
 
 test_requires 'Test::More';
+test_requires 'Parallel::Scoreboard';
 auto_set_repository;
 WriteAll;
