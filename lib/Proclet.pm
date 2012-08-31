@@ -193,12 +193,14 @@ sub log_worker {
             foreach my $fh ( @ready ) {
                 my $sid = $fileno2sid{fileno($fh)};
                 my @lt = localtime;
-                my $log = <$fh>;
-                my $prefix = sprintf('%02d:%02d:%02d %-'.$maxlen.'s |',$lt[2],$lt[1],$lt[0], $sid);
-                $prefix = colored( $prefix, $services->{$sid}->{color} ) if $self->color;
-                chomp $log;
-                chomp $log;
-                warn  $prefix . ' ' . $log . "\n";
+                sysread($fh, my $buf, 65536);
+                for my $log ( split /\r?\n/, $buf ) {
+                    my $prefix = sprintf('%02d:%02d:%02d %-'.$maxlen.'s |',$lt[2],$lt[1],$lt[0], $sid);
+                    $prefix = colored( $prefix, $services->{$sid}->{color} ) if $self->color;
+                    chomp $log;
+                    chomp $log;
+                    warn  $prefix . ' ' . $log . "\n";
+            }
             }
         }
     };
@@ -216,7 +218,9 @@ Proclet - minimalistic Supervisor
 
   use Proclet;
 
-  my $proclet = Proclet->new;
+  my $proclet = Proclet->new(
+      color => 1
+  );
 
   # add service
   $proclet->service(
@@ -225,6 +229,7 @@ Proclet - minimalistic Supervisor
           work($job);
       },
       worker => 2,
+      tag => 'worker'
   );
 
   $proclet->service(
@@ -237,6 +242,7 @@ Proclet - minimalistic Supervisor
           );
           $loader->run($app);
       },
+      tag => 'web'
   );
 
   $proclet->service(
@@ -292,6 +298,10 @@ Code reference of service
 =item worker: Int
 
 Number of children to fork, default is "1"
+
+=item tag: Str
+
+Keyword for log. optional
 
 =back
 
