@@ -6,6 +6,7 @@ requires 'Parallel::Prefork', 0.13;
 requires 'Data::Validator';
 requires 'Mouse';
 requires 'Log::Minimal';
+requires 'Term::ANSIColor';
 
 tests 't/*.t';
 author_tests 'xt';

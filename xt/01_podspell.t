@@ -9,3 +9,6 @@ __DATA__
 Masahiro Nagano
 kazeburo {at} gmail.com
 Proclet
+Str
+timestamp
+
