@@ -8,14 +8,24 @@ my $sb = Parallel::Scoreboard->new(
     base_dir => tempdir( CLEANUP => 1 )
 );
 
+
+my $logfile = File::Temp::tmpnam();
 my $pid = fork();
 
 die $! if ! defined $pid;
 
 if ( $pid == 0 ) {
-    my $proclet = Proclet->new;
+    my $proclet = Proclet->new(
+        logger => sub {
+            my $log = shift;
+            open( my $fh, '>>:unix', $logfile );
+            print $fh $log;
+            close $fh;
+        },
+    );
     $proclet->service(
         code => sub {
+            warn 'sp2plet';
             $sb->update("sp2plet");
             sleep 6;
         },
@@ -23,6 +33,7 @@ if ( $pid == 0 ) {
     );
     $proclet->service(
         code => sub {
+            warn 'sp3plet';
             $sb->update("sp3plet");
             sleep 6;
         },
@@ -54,5 +65,11 @@ for (1..2) {
 kill 'TERM', $pid;
 waitpid( $pid, 0);
 
+open(my $fh, $logfile);
+my $logok;
+while( <$fh> ) {
+    $logok++ if $_ =~ m!^\d{2}:\d{2}:\d{2} \d\.\d[ ]+\| sp[23]plet!;
+}
+is($logok, 10);
 done_testing();
 
