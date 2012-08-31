@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.10    Fri Aug 31 15:28:31
+        - Added logger opt
+
 0.09    Fri Aug 31 12:27:15
         - Supports formating stdout,stderr from services
 
