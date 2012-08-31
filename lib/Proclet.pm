@@ -8,6 +8,8 @@ use Data::Validator;
 use Mouse;
 use Mouse::Util::TypeConstraints;
 use Log::Minimal;
+use IO::Select;
+use Term::ANSIColor;
 
 subtype 'ServiceProcs'
     => as 'Int',
@@ -23,7 +25,6 @@ has '_services' => (
     default => sub { [] },
 );
 
-
 has 'spawn_interval' => (
     is => 'ro',
     isa => 'Int',
@@ -36,16 +37,33 @@ has 'err_respawn_interval' => (
     default => 1,
 );
 
+has 'color' => (
+    is => 'rw',
+    isa => 'Bool',
+    default => 0,
+);
+
 my $rule = Data::Validator->new(
     code => { isa => 'CodeRef' },
     worker => { isa => 'ServiceProcs', default => 1 },
+    tag => { isa => 'Str', optional => 1 },
 )->with('Method');
+
+our @COLORS = qw/green magenta blue yellow cyan/;
 
 sub service {
     my($self, $args) = $rule->validate(@_);
+    $self->{service_num} ||= 0;
+    $self->{service_num}++;
+    $self->{tags} ||= {};
+    my $tag = ( exists $args->{tag} && defined $args->{tag} ) ? $args->{tag} : $self->{service_num};
+    die "tag: $tag is already exists" if exists $self->{tags}->{$tag};
+    $self->{tags}->{$tag} = 1;
     push @{$self->_services}, {
         code => $args->{code},
         worker => $args->{worker},
+        tag => $tag,
+        color => $COLORS[ $self->{service_num} % @COLORS ],
     };
 }
 
@@ -53,19 +71,30 @@ sub run {
     my $self = shift;
 
     my $max_workers = 0;
-    my $max_service = 0;
-    my %running;
     my %services;
     for my $service ( @{$self->_services} ) {
-        $max_workers += $service->{worker};
-        $services{$max_service} = $service;
-        $running{$max_service} = [];
-        $max_service++;
+        my $worker = $service->{worker};
+        for my $i ( 1..$worker ) {
+            my $sid = $service->{tag} . '.' . $i;
+            
+            $services{$sid} = {
+                %$service,
+                pipe => $self->create_pipe,
+            };
+        }
+        $max_workers += $worker;
     }
-    croak('no services exists') if !$max_workers;
+    croak('no services exists') if ! $max_workers;
+
+    $max_workers++;
+    $services{__log__} = {
+        code => $self->log_worker(\%services),
+    };
 
     my $next;
     my %pid2service;
+    my %running;
+
     my $pm = Parallel::Prefork->new({
         spawn_interval => $self->spawn_interval,
         err_respawn_interval => $self->err_respawn_interval,
@@ -75,24 +104,24 @@ sub run {
         },
         on_child_reap => sub {
             my ( $pm, $exit_pid, $status ) = @_;
-            debugf "[parent] on child reap: exit_pid => %s status => %s, service => %s", 
+            debugf "[Proclet] on child reap: exit_pid => %s status => %s, service => %s", 
                 $exit_pid, $status, exists $pid2service{$exit_pid} ? $pid2service{$exit_pid} : 'undefined';
             if ( exists $pid2service{$exit_pid} ) {
                 my $sid = $pid2service{$exit_pid};
-                my @pids = grep { $_ != $exit_pid  } @{$running{$sid}};
-                $running{$sid} = \@pids;                
+                delete $running{$sid};
                 delete $pid2service{$exit_pid};
             }
-            debugf "[parent] on_child_reap: running => %s", \%running;
+            debugf "[Proclet] on_child_reap: running => %s", \%running;
         },
+
         before_fork => sub {
-            $Log::Minimal::AUTODUMP = 1;
-            debugf "[parent] before_fork: running => %s", \%running;
+            local $Log::Minimal::AUTODUMP = 1;
+            debugf "[Proclet] before_fork: running => %s", \%running;
             my $pm = shift;
-            for my $sid ( 0..$max_service ) {                
-                if ( scalar @{$running{$sid}} < $services{$sid}->{worker} ) {
+            for my $sid ( keys %services ) {
+                if ( ! exists $running{$sid} ) {
                     $next = $sid;
-                    debugf "[parent] before_fork: next => %s", $next;
+                    debugf "[Proclet] before_fork: next => %s", $next;
                     last;
                 }
             }
@@ -100,12 +129,12 @@ sub run {
         after_fork => sub {
             my ($pm, $pid) = @_;
             if ( defined $next ) {
-                debugf "[parent] child start: sid =>%s", $next;
-                push @{$running{$next}}, $pid;
+                debugf "[Proclet] child start: sid =>%s", $next;
                 $pid2service{$pid} = $next;
+                $running{$next} = $pid;                
             }
             else {
-                debugf "[parent] child start but next is undefined";
+                debugf "[Proclet] child start but next is undefined";
             }
             $next = undef;
         },
@@ -114,16 +143,65 @@ sub run {
     while ($pm->signal_received ne 'TERM' ) {
         $pm->start( sub {
             if ( defined $next ) {
-                my $code = $services{$next}->{code};
+                my $service = delete $services{$next};
+                if ( $service->{pipe} ) {
+                    undef %services;
+                    my $logwh = $service->{pipe}->[1];
+                    close $service->{pipe}->[0];
+                    open STDOUT, '>&', $logwh
+                        or die "Died: failed to redirect STDOUT";
+                    open STDERR, '>&', $logwh
+                        or die "Died: failed to redirect STDERR";
+                }
+                my $code = $service->{code};
                 $code->();
             }
             else {
-                debugf "[%s] child start but next is undefined",$$;
+                debugf "[Proclet] child (pid=>%s) start but next is undefined",$$;
             }
         });
     }
 
     $pm->wait_all_children();
+}
+
+sub create_pipe {
+    my $self = shift;
+    pipe my $logrh, my $logwh
+        or die "Died: failed to create pipe:$!";
+    return [$logrh, $logwh];
+}
+
+sub log_worker {
+    my $self = shift;
+    my $services = shift;
+    sub {
+        my %fileno2sid;
+        my $s = IO::Select->new();
+        debugf "[Proclet] start log worker";
+        my $maxlen = 0;
+        for my $sid ( keys %$services ) {
+            close $services->{$sid}->{pipe}->[1];
+            my $rh = $services->{$sid}->{pipe}->[0];
+            $fileno2sid{fileno($rh)} = $sid;
+            $s->add($rh);
+            $maxlen = length($sid) if length($sid) > $maxlen;
+        }
+        $maxlen = 10 if $maxlen < 10;
+        while ( 1 ) {
+            my @ready = $s->can_read(1);
+            foreach my $fh ( @ready ) {
+                my $sid = $fileno2sid{fileno($fh)};
+                my @lt = localtime;
+                my $log = <$fh>;
+                my $prefix = sprintf('%02d:%02d:%02d %-'.$maxlen.'s |',$lt[2],$lt[1],$lt[0], $sid);
+                $prefix = colored( $prefix, $services->{$sid}->{color} ) if $self->color;
+                chomp $log;
+                chomp $log;
+                warn  $prefix . ' ' . $log . "\n";
+            }
+        }
+    };
 }
 
 __PACKAGE__->meta->make_immutable();
@@ -192,6 +270,10 @@ interval in seconds between spawning services unless a service exits abnormally 
 =item err_respawn_interval: Int
 
 number of seconds to deter spawning of services after a service exits abnormally (default: 1)
+
+=item color: Bool
+
+colored log (default: 0)
 
 =back
 
