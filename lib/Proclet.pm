@@ -257,6 +257,18 @@ Proclet - minimalistic Supervisor
 
 Proclet is minimalistic Supervisor, fork and manage many services from one perl script.
 
+=head1 LOG
+
+Logs from services are Displayed with timestamp and tag.
+
+  12:23:16 memcached.1 | <6 server listening (udp)
+  12:23:16 memcached.1 | <7 send buffer was 9216, now 3728270
+  12:23:16 memcached.1 | <7 server listening (udp)
+  12:23:16 web.1       | 2012/08/31-12:23:16 Starman::Server (type Net::Server::PreFork) starting! pid(51516)
+  12:23:16 web.1       | Resolved [*]:5432 to [0.0.0.0]:5432, IPv4
+  12:23:16 web.1       | Binding to TCP port 5432 on host 0.0.0.0 with IPv4 
+  12:23:16 web.1       | Setting gid to "20 20 20 401 204 100 98 81 80 79 61 12 402"
+
 =head1 METHOD
 
 =over 4
