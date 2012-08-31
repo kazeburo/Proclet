@@ -88,7 +88,7 @@ sub run {
 
     $max_workers++;
     $services{__log__} = {
-        code => $self->log_worker(\%services),
+        code => $self->log_worker(),
     };
 
     my $next;
@@ -152,9 +152,11 @@ sub run {
                         or die "Died: failed to redirect STDOUT";
                     open STDERR, '>&', $logwh
                         or die "Died: failed to redirect STDERR";
+                    $service->{code}->();
                 }
-                my $code = $service->{code};
-                $code->();
+                else {
+                    $service->{code}->(\%services);
+                }
             }
             else {
                 debugf "[Proclet] child (pid=>%s) start but next is undefined",$$;
@@ -174,8 +176,8 @@ sub create_pipe {
 
 sub log_worker {
     my $self = shift;
-    my $services = shift;
     sub {
+        my $services = shift;
         my %fileno2sid;
         my $s = IO::Select->new();
         debugf "[Proclet] start log worker";
