@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 use Getopt::Compact::WithCmd;
-use Cwd 'abs_path';
-use Data::Dumper;
 use Proclet;
 use YAML::XS;
 use utf8;

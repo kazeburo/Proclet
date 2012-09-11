@@ -7,6 +7,8 @@ requires 'Data::Validator';
 requires 'Mouse';
 requires 'Log::Minimal';
 requires 'Term::ANSIColor';
+requires 'Getopt::Compact::WithCmd', 0.20;
+requires 'YAML::XS', 0.38;
 
 tests 't/*.t';
 author_tests 'xt';
