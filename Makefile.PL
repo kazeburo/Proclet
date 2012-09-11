@@ -10,7 +10,7 @@ requires 'Term::ANSIColor';
 requires 'Getopt::Compact::WithCmd', 0.20;
 requires 'YAML::XS', 0.38;
 
-tests 't/*.t';
+tests 't/*.t t/*/*.t';
 author_tests 'xt';
 
 test_requires 'Test::More';
