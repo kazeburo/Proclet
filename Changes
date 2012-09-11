@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.11    Tue Sep 11 13:50:23
+        - Added proclet command. foreman for perl
+
 0.10    Fri Aug 31 15:28:31
         - Added logger opt
 
