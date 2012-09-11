@@ -1,0 +1,1 @@
+loop: perl -e 'while(1){ open(my $fh, ">>", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "$$\n"; close $fh; sleep 1}'

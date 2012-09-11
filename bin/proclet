@@ -53,9 +53,7 @@ my $go = Getopt::Compact::WithCmd->new(
    },
 );
 
-
 my $cmd  = $go->command || $go->show_usage;
-
 
 if ( -f '.foreman' ) {
     my $yaml_opt;

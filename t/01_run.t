@@ -8,7 +8,6 @@ my $sb = Parallel::Scoreboard->new(
     base_dir => tempdir( CLEANUP => 1 )
 );
 
-
 my $logfile = File::Temp::tmpnam();
 my $pid = fork();
 
