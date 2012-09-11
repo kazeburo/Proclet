@@ -22,3 +22,4 @@
 sample.pl
 MYMETA.json
 MYMETA.yml
+^procfile/

@@ -12,7 +12,7 @@ use IO::Select;
 use Term::ANSIColor;
 
 subtype 'ServiceProcs'
-    => as 'Int',
+    => as 'Int'
     => where { $_ > 0 };
 
 no Mouse::Util::TypeConstraints;

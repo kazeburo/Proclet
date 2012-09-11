@@ -1,0 +1,2 @@
+memd: memcached -vvv -p 11211
+plack: plackup -p 9022 -e 'sub { [200, [], ["OK"]] }'

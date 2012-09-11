@@ -1,0 +1,142 @@
+#!/usr/bin/perl 
+
+use strict;
+use warnings;
+use Getopt::Compact::WithCmd;
+use Cwd 'abs_path';
+use Data::Dumper;
+use Proclet;
+use YAML::XS;
+use utf8;
+
+my %opt;
+$opt{concurrency} = '';
+$opt{procfile} = 'Procfile';
+$opt{envfile} = '';
+$opt{color} = 0;
+
+my $go = Getopt::Compact::WithCmd->new(
+    name => 'proclet',
+    version => $Proclet::VERSION,
+    command_struct => {
+        'start' => {
+            options => [
+                [
+                    [qw/c concurrency/],
+                    'the number of each process type to run. The value passed in should be in the format process=num,process=num',
+                    '=s',
+                    \$opt{concurrency},
+                    { required => 0 },
+                ],
+                [
+                    [qw/e env/],
+                    'an alternate environment file. You can specify more than one file by using: --env file1,file2.',
+                    '=s',
+                    \$opt{envfile},
+                    { required => 0 }
+                ],
+                [
+                    [qw/f procfile/],
+                    'an alternate Procfile to load, implies -d at the Procfile root',
+                    '=s',
+                    \$opt{procfile},
+                    { required => 0 }
+                ], 
+                [
+                    [qw/color/],
+                    'colored log',
+                    '!',
+                    \$opt{color},
+                    { required => 0 }
+                ], 
+
+            ],
+        }
+   },
+);
+
+
+my $cmd  = $go->command || $go->show_usage;
+
+
+if ( -f '.foreman' ) {
+    my $yaml_opt;
+    eval { 
+        $yaml_opt = YAML::XS::LoadFile('.foreman');
+    };
+    die 'cannot load .foreman as yaml: '. $@ if $@;
+    %opt = (
+        %opt,
+        %$yaml_opt
+    );
+}
+
+if ( $cmd eq 'start' ) {
+
+    if ( ! length($opt{envfile}) && -f '.env') {
+        load_envfile('.env');
+    }
+    else {
+        my @envfile = split /,/, $opt{envfile};
+        load_envfile($_) for @envfile;
+    }
+
+    my $services = load_procfile($opt{procfile});
+    my $concurrency = parse_concurrency($opt{concurrency});
+
+    die 'no services defined' unless keys %$services;
+
+    my $proclet = Proclet->new( color => $opt{color} );
+    for my $process ( keys %$services ) {
+        my $worker = exists $concurrency->{$process} ? $concurrency->{$process} : 1;
+        next if $worker == 0;
+        $proclet->service(
+            tag => $process,
+            code => sub {
+                exec $services->{$process};
+            },
+            worker => $worker, 
+        );
+    }
+    $proclet->run();
+}
+else {
+    $go->show_usage()
+}
+
+
+sub load_procfile {
+    my $file = shift;
+    my %services;
+    open(my $fh, '<:utf8', $file) or die "cannot load procfile $file: $!";
+    while (my $line = <$fh>) {
+        if (my ($name, $command) = ($line =~ /^([^:]+)\s*:\s*(.+)/)) {
+            $services{$name} = $command;
+        }
+    }
+    return \%services;
+}
+
+sub load_envfile {
+    my $file = shift;    
+    open(my $fh, '<:utf8', $file) or die "cannot load envfile $file: $!";
+    while (my $line = <$fh>) {
+        if (my ($name, $val) = ($line =~ /^([^=]+)\s*=\s*(.+)/)) {
+            $ENV{$name} = $val;
+        }
+    }
+}
+
+sub parse_concurrency {
+    my $opt = shift;
+    my %concurrency;
+    for my $process ( split /,/, $opt ) {
+        if ( $process =~ /^\s*([^=]+)\s*=\s*(\d+)\s*$/ ) {
+            $concurrency{$1} = $2;
+        }
+        else {
+            die "incorrect concurrency option, near '$process'";
+        }
+    }
+    return \%concurrency;
+}
