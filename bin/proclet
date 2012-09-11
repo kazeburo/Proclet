@@ -136,3 +136,88 @@ sub parse_concurrency {
     }
     return \%concurrency;
 }
+
+__END__
+
+=head1 NAME
+
+proclet - foreman for perl
+
+=head1 SYNOPSIS
+
+  $ cat Procfile
+  memd: memcached -v -p 11211
+  plack: plackup -p 9022 -e 'sub { [200, [], ["OK"]] }'
+  $ proclet start
+
+=head1 DESCRIPTION
+
+proclet is foreman for perl, manages Procfile-based applications.
+
+proclet does not support B<EXPORT> yet.
+
+=head1 RUNNING
+
+B<proclet start> is used to run your application directly from the command line.
+
+The following options control how the application is run:
+
+=over 4
+
+=item -h, --help
+
+Display help message
+
+=item -c, --concurrency: Str
+
+The number of each process type to run. The value passed in should be in the format process=num,process=num
+
+=item -e, --env: Str
+
+An alternate environment file. You can specify more than one file by using: --env file1,file2.
+
+=item -f, --procfile: Str
+
+An alternate Procfile to load, implies -d at the Procfile root
+
+=item --color
+
+Colored log
+
+=back
+
+=head1 PROCFILE
+
+A Procfile should contain both a name for the process and the command used to run it.
+
+  web: bundle exec thin start
+  job: bundle exec rake jobs:work
+
+=head1 ENVIRONMENT
+
+If a B<.env> file exists in the current directory, the default environment will be read from it. This file should contain key/value pairs, separated by =, with one key/value pair per line.
+
+  FOO=bar
+  BAZ=qux
+
+=head1 DEFAULT OPTIONS
+
+If a B<.foreman> file exists in the current directory, default options will be read from it. This file should be in YAML format with the long option name as keys. Example:
+
+  concurrency: alpha=0,bravo=1
+  color: 1
+
+=head1 AUTHOR
+
+Masahiro Nagano E<lt>kazeburo {at} gmail.comE<gt>
+
+=head1 SEE ALSO
+
+L<Proclet>, L<https://github.com/ddollar/foreman>
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
