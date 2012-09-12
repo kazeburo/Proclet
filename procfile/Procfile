@@ -1,0 +1,3 @@
+web1: plackup -s Starman web.psgi
+web2: plackup -p 5001 -s Starman web.psgi
+
