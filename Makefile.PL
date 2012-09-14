@@ -9,6 +9,7 @@ requires 'Log::Minimal';
 requires 'Term::ANSIColor';
 requires 'Getopt::Compact::WithCmd', 0.20;
 requires 'YAML::XS', 0.38;
+requires 'parent';
 
 tests 't/*.t t/*/*.t';
 author_tests 'xt';

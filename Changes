@@ -1,15 +1,19 @@
 Revision history for Perl extension Proclet
 
-0.12    Thu Sep 13 2:19:33
+0.13    Fri Sep 14 10:26:01 2012
+        - Added requires 'parent' 
+          http://www.cpantesters.org/cpan/report/e10f00ac-fdfe-11e1-bdcc-373e3b6b8117
+
+0.12    Thu Sep 13 2:19:33 2012
         - Added Proclet::Declare
 
-0.11    Tue Sep 11 13:50:23
+0.11    Tue Sep 11 13:50:23 2012
         - Added proclet command. foreman for perl
 
-0.10    Fri Aug 31 15:28:31
+0.10    Fri Aug 31 15:28:31 2012
         - Added logger opt
 
-0.09    Fri Aug 31 12:27:15
+0.09    Fri Aug 31 12:27:15 2012
         - Supports formating stdout,stderr from services
 
 0.08    Mon Aug 6 23:24:11 2012
