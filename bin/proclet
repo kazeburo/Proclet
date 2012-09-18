@@ -18,6 +18,7 @@ $opt{color} = 0;
 my $go = Getopt::Compact::WithCmd->new(
     name => 'proclet',
     version => $Proclet::VERSION,
+    args => '[service]',
     command_struct => {
         'start' => {
             options => [
@@ -56,6 +57,8 @@ my $go = Getopt::Compact::WithCmd->new(
 );
 
 my $cmd  = $go->command || $go->show_usage;
+$go->show_usage if $go->opts->{help};
+my ($args) = @{$go->args};
 
 if ( -f '.foreman' ) {
     my $yaml_opt;
@@ -86,6 +89,7 @@ if ( $cmd eq 'start' ) {
 
     my $proclet = Proclet->new( color => $opt{color} );
     for my $process ( keys %$services ) {
+        next if defined $args && $process ne $args;
         my $worker = exists $concurrency->{$process} ? $concurrency->{$process} : 1;
         next if $worker == 0;
         $proclet->service(

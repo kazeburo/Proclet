@@ -10,7 +10,7 @@ die $! if ! defined $pid;
 
 if ( $pid == 0 ) {
     chdir 't/30proclet/procfile';
-    exec $^X, '../../../bin/proclet', 'start';
+    exec $^X, '../../../bin/proclet', 'start','w2';
     exit;
 }
 
@@ -24,7 +24,7 @@ while( <$fh> ) {
     $logok{$l[0]}->{$l[1]} = 1;
 }
 close $fh;
-is( scalar keys %{$logok{w1}}, 1);
+ok(!exists $logok{w1});
 is( scalar keys %{$logok{w2}}, 2);
 
 kill 'TERM', $pid;

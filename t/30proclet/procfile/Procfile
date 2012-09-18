@@ -1,1 +1,2 @@
-loop: perl -e 'while(1){ open(my $fh, ">>", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "$$\n"; close $fh; sleep 1}'
+w1: perl -e 'while(1){ open(my $fh, ">>:unix", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "w1 $$\n"; close $fh; sleep 1}'
+w2: perl -e 'while(1){ open(my $fh, ">>:unix", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "w2 $$\n"; close $fh; sleep 1}'
