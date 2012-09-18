@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.14    Tue Sep 18 14:03:20 2012
+        - Added process arg to exec a specified service
+          proclet start [options] [process]
+
 0.13    Fri Sep 14 10:26:01 2012
         - Added requires 'parent' 
           http://www.cpantesters.org/cpan/report/e10f00ac-fdfe-11e1-bdcc-373e3b6b8117
