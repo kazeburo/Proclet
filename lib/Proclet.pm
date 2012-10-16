@@ -17,7 +17,7 @@ subtype 'ServiceProcs'
 
 no Mouse::Util::TypeConstraints;
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 has '_services' => (
     is => 'ro',
@@ -110,6 +110,8 @@ sub run {
         },
         on_child_reap => sub {
             my ( $pm, $exit_pid, $status ) = @_;
+            local $Log::Minimal::AUTODUMP = 1;
+            local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
             debugf "[Proclet] on child reap: exit_pid => %s status => %s, service => %s", 
                 $exit_pid, $status, exists $pid2service{$exit_pid} ? $pid2service{$exit_pid} : 'undefined';
             if ( exists $pid2service{$exit_pid} ) {
@@ -122,6 +124,7 @@ sub run {
 
         before_fork => sub {
             local $Log::Minimal::AUTODUMP = 1;
+            local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
             debugf "[Proclet] before_fork: running => %s", \%running;
             my $pm = shift;
             for my $sid ( keys %services ) {
@@ -134,6 +137,8 @@ sub run {
         },
         after_fork => sub {
             my ($pm, $pid) = @_;
+            local $Log::Minimal::AUTODUMP = 1;
+            local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
             if ( defined $next ) {
                 debugf "[Proclet] child start: sid =>%s", $next;
                 $pid2service{$pid} = $next;
@@ -165,6 +170,8 @@ sub run {
                 }
             }
             else {
+                local $Log::Minimal::AUTODUMP = 1;
+                local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
                 debugf "[Proclet] child (pid=>%s) start but next is undefined",$$;
             }
         });
@@ -183,6 +190,8 @@ sub create_pipe {
 sub log_worker {
     my $self = shift;
     sub {
+        local $Log::Minimal::AUTODUMP = 1;
+        local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
         my $services = shift;
         my %fileno2sid;
         my $s = IO::Select->new();

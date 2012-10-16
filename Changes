@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.15    Tue Oct 16 15:02:30 2012
+        - hide Log::Minimal debug message if LM_DEBUG is true
+          use PROCLET_DEBUG to show debug message
+
 0.14    Tue Sep 18 14:03:20 2012
         - Added process arg to exec a specified service
           proclet start [options] [process]
