@@ -1,5 +1,11 @@
 Revision history for Perl extension Proclet
 
+0.17    Fri Nov 16 15:04:44 2012
+        - use /bin/bash for exec command.
+          ubuntu symlink /bin/sh to /bin/dash, /bin/dash does not clean up child processes.
+        - wait to finish log process until other process exit
+        - fixed test. unlink tmp files.
+
 0.16    Fri Nov 16 9:56:52 2012
         - Fixed test. not use infinite loop in test.
           https://github.com/kazeburo/Proclet/issues/2
