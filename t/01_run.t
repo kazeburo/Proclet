@@ -70,5 +70,6 @@ while( <$fh> ) {
     $logok++ if $_ =~ m!^\d{2}:\d{2}:\d{2} \d\.\d[ ]+\| sp[23]plet!;
 }
 is($logok, 10);
+unlink($logfile);
 done_testing();
 

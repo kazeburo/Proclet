@@ -10,7 +10,7 @@ die $! if ! defined $pid;
 
 if ( $pid == 0 ) {
     chdir 't/30proclet/procfile';
-    exec $^X, '../../../bin/proclet', 'start','w2';
+    exec $^X, '-I../../../lib','../../../bin/proclet', 'start','w2';
     exit;
 }
 
@@ -29,5 +29,5 @@ is( scalar keys %{$logok{w2}}, 2);
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);
-
+unlink($logfile);
 done_testing();

@@ -28,7 +28,7 @@ while( <$fh> ) {
 
 is( scalar keys %{$logok{w1}}, 1);
 is( scalar keys %{$logok{w2}}, 2);
-
+unlink($logfile);
 done_testing();
 
 
