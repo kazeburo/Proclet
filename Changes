@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.18    Sat Nov 17 1:12:30 2012
+        - start up logworker at first
+
 0.17    Fri Nov 16 15:04:44 2012
         - use /bin/bash for exec command.
           ubuntu symlink /bin/sh to /bin/dash, /bin/dash does not clean up child processes.
