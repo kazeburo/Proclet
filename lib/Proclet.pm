@@ -134,13 +134,18 @@ sub run {
             local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
             debugf "[Proclet] before_fork: running => %s", \%running;
             my $pm = shift;
-            for my $sid ( keys %services ) {
-                if ( ! exists $running{$sid} ) {
-                    $next = $sid;
-                    debugf "[Proclet] before_fork: next => %s", $next;
-                    last;
+            if ( ! exists $running{__log__} ) {
+                $next = '__log__';
+            }
+            else {
+                for my $sid ( keys %services ) {
+                    if ( ! exists $running{$sid} ) {
+                        $next = $sid;
+                        last;
+                    }
                 }
             }
+            debugf "[Proclet] before_fork: next => %s", $next;
         },
         after_fork => sub {
             my ($pm, $pid) = @_;
@@ -149,7 +154,7 @@ sub run {
             if ( defined $next ) {
                 debugf "[Proclet] child start: sid =>%s", $next;
                 $pid2service{$pid} = $next;
-                $running{$next} = $pid;                
+                $running{$next} = $pid;
             }
             else {
                 debugf "[Proclet] child start but next is undefined";
@@ -235,6 +240,7 @@ sub log_worker {
                 }
             }
         }
+        debugf "[Proclet] finished log worker";
     };
 }
 
