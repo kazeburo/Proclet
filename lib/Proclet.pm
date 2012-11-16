@@ -100,13 +100,16 @@ sub run {
     my $next;
     my %pid2service;
     my %running;
-
+    my $wait_all_children = 0;
+    my $wait_running = $max_workers;
     my $pm = Parallel::Prefork->new({
         spawn_interval => $self->spawn_interval,
         err_respawn_interval => $self->err_respawn_interval,
         max_workers => $max_workers,
         trap_signals => {
-            map { ($_ => 'TERM') } qw/TERM HUP/
+            TERM => 'TERM',
+            HUP  => 'TERM',
+            INT  => 'INT',
         },
         on_child_reap => sub {
             my ( $pm, $exit_pid, $status ) = @_;
@@ -118,6 +121,10 @@ sub run {
                 my $sid = $pid2service{$exit_pid};
                 delete $running{$sid};
                 delete $pid2service{$exit_pid};
+                if ( $wait_all_children ) {
+                    $wait_running--;
+                    kill 'TERM',$running{__log__} if $wait_running == 1 && exists $running{__log__};
+                }
             }
             debugf "[Proclet] on_child_reap: running => %s", \%running;
         },
@@ -151,7 +158,7 @@ sub run {
         },
     });
 
-    while ($pm->signal_received ne 'TERM' ) {
+    while ($pm->signal_received !~ m!^(?:TERM|INT)$! ) {
         $pm->start( sub {
             if ( defined $next ) {
                 my $service = delete $services{$next};
@@ -176,7 +183,7 @@ sub run {
             }
         });
     }
-
+    $wait_all_children=1;
     $pm->wait_all_children();
 }
 
@@ -205,7 +212,11 @@ sub log_worker {
             $maxlen = length($sid) if length($sid) > $maxlen;
         }
         $maxlen = 10 if $maxlen < 10;
-        while ( 1 ) {
+        my $loop = 0;
+        local $SIG{TERM} = $SIG{INT} = sub {
+            $loop++;
+        };
+        while ( $loop < 2 ) {
             my @ready = $s->can_read(1);
             foreach my $fh ( @ready ) {
                 my $sid = $fileno2sid{fileno($fh)};
@@ -221,7 +232,7 @@ sub log_worker {
                     } else {
                         warn  $prefix . ' ' . $log . "\n";
                     }
-            }
+                }
             }
         }
     };
