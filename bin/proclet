@@ -92,10 +92,12 @@ if ( $cmd eq 'start' ) {
         next if defined $args && $process ne $args;
         my $worker = exists $concurrency->{$process} ? $concurrency->{$process} : 1;
         next if $worker == 0;
+        my @command = ($services->{$process}); 
+        if ( -x "/bin/bash" ) { unshift @command, "/bin/bash", "-c" }
         $proclet->service(
             tag => $process,
             code => sub {
-                exec $services->{$process};
+                exec @command;
             },
             worker => $worker, 
         );

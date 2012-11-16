@@ -35,7 +35,14 @@ sub service {
     my @service = @_;
     my $code = ( ref($service[0]) && ref($service[0]) eq 'CODE' )
         ? $service[0]
-        : sub { exec(@service); die $! };
+        : sub {
+            my @command = @service;
+            if ( @command == 1 ) {
+                if ( -x "/bin/bash" ) { unshift @command, "/bin/bash", "-c" }
+            }
+            exec(@command);
+            die $!
+        };
     _proclet->{service}->{$tag} = $code;
 }
 
