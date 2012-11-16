@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.16    Fri Nov 16 9:56:52 2012
+        - Fixed test. not use infinite loop in test.
+          https://github.com/kazeburo/Proclet/issues/2
+
 0.15    Tue Oct 16 15:02:30 2012
         - hide Log::Minimal debug message if LM_DEBUG is true
           use PROCLET_DEBUG to show debug message
