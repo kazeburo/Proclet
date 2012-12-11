@@ -17,7 +17,7 @@ subtype 'ServiceProcs'
 
 no Mouse::Util::TypeConstraints;
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 has '_services' => (
     is => 'ro',
@@ -366,7 +366,7 @@ Keyword for log. optional
 
 =item run
 
-run services
+run services. Proclet does start services by defined order
 
 =back
 
