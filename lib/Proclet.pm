@@ -73,11 +73,13 @@ sub service {
     };
 }
 
+my $LOGGER = '__log__';
+
 sub run {
     my $self = shift;
 
-    my $max_workers = 0;
     my %services;
+    my @services;
     for my $service ( @{$self->_services} ) {
         my $worker = $service->{worker};
         for my $i ( 1..$worker ) {
@@ -87,25 +89,24 @@ sub run {
                 %$service,
                 pipe => $self->create_pipe,
             };
+            push @services, $sid;
         }
-        $max_workers += $worker;
     }
-    croak('no services exists') if ! $max_workers;
+    croak('no services exists') if ! @services;
 
-    $max_workers++;
-    $services{__log__} = {
+    $services{$LOGGER} = {
         code => $self->log_worker(),
     };
+    push @services, $LOGGER;
 
     my $next;
     my %pid2service;
     my %running;
-    my $wait_all_children = 0;
-    my $wait_running = $max_workers;
+    my $wait_all_children;
     my $pm = Parallel::Prefork->new({
         spawn_interval => $self->spawn_interval,
         err_respawn_interval => $self->err_respawn_interval,
-        max_workers => $max_workers,
+        max_workers => scalar @services,
         trap_signals => {
             TERM => 'TERM',
             HUP  => 'TERM',
@@ -122,8 +123,7 @@ sub run {
                 delete $running{$sid};
                 delete $pid2service{$exit_pid};
                 if ( $wait_all_children ) {
-                    $wait_running--;
-                    kill 'TERM',$running{__log__} if $wait_running == 1 && exists $running{__log__};
+                    kill 'TERM', $running{$LOGGER} if scalar keys %running == 1 && exists $running{$LOGGER};
                 }
             }
             debugf "[Proclet] on_child_reap: running => %s", \%running;
@@ -134,11 +134,11 @@ sub run {
             local $Log::Minimal::ENV_DEBUG = 'PROCLET_DEBUG';
             debugf "[Proclet] before_fork: running => %s", \%running;
             my $pm = shift;
-            if ( ! exists $running{__log__} ) {
-                $next = '__log__';
+            if ( ! exists $running{$LOGGER} ) {
+                $next = $LOGGER;
             }
             else {
-                for my $sid ( keys %services ) {
+                for my $sid ( @services ) {
                     if ( ! exists $running{$sid} ) {
                         $next = $sid;
                         last;
@@ -188,7 +188,7 @@ sub run {
             }
         });
     }
-    $wait_all_children=1;
+    $wait_all_children = 1;
     $pm->wait_all_children();
 }
 
