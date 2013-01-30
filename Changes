@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.20    Wed Jan 30 23:43:23 2013
+        - use Log::Minimal env_debug
+          requires Log::Minimal 0.14
+
 0.19    Tue Dec 11 16:31:33 2012
         - start services by defined order
 
