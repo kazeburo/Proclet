@@ -15,6 +15,28 @@ subtype 'ServiceProcs'
     => as 'Int'
     => where { $_ > 0 };
 
+subtype 'Proclet::Service'
+    => as 'CodeRef'
+    => message { "This argument must be String or ArrayRef or CodeRef" };
+coerce 'Proclet::Service'
+    => from 'ArrayRef' => via {
+        my @command = @{$_};
+        if ( @command == 1 && -x "/bin/bash" ) { unshift @command, "/bin/bash", "-c" }
+        sub {
+            exec(@command);
+            die $!
+        }
+    }
+    => from 'Str' => via {
+        my @command = ($_);
+        if ( -x "/bin/bash" ) { unshift @command, "/bin/bash", "-c" }
+        sub {
+            exec @command;
+            die $!
+        }
+    };
+    
+
 no Mouse::Util::TypeConstraints;
 
 our $VERSION = '0.20';
@@ -50,7 +72,7 @@ has 'logger' => (
 );
 
 my $rule = Data::Validator->new(
-    code => { isa => 'CodeRef' },
+    code => { isa => 'Proclet::Service', coerce => 1 },
     worker => { isa => 'ServiceProcs', default => 1 },
     tag => { isa => 'Str', optional => 1 },
 )->with('Method');
@@ -109,7 +131,7 @@ sub run {
         max_workers => scalar @services,
         trap_signals => {
             TERM => 'TERM',
-            HUP  => 'TERM',
+            HUP  => 'HUP',
             INT  => 'INT',
         },
         on_child_reap => sub {
@@ -345,9 +367,29 @@ Attributes are as follows:
 
 =over 4
 
-=item code: CodeRef
+=item code: CodeRef|ArrayRef|Str
 
-Code reference of service
+Code reference or commands of services.
+
+CodeRef
+
+  $proclet->service(
+    code => sub {
+        MyWorker->run();
+    }
+  );
+
+ArrayRef
+
+  $proclet->service(
+    code => ['plackup','-a','app.psgi'],
+  );
+
+Str
+
+  $proclet->service(
+    code => '/usr/bin/memcached'
+  );
 
 =item worker: Int
 
