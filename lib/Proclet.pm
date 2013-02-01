@@ -131,7 +131,7 @@ sub run {
         max_workers => scalar @services,
         trap_signals => {
             TERM => 'TERM',
-            HUP  => 'HUP',
+            HUP  => 'TERM',
             INT  => 'INT',
         },
         on_child_reap => sub {

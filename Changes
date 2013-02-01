@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.21    Fri Feb 1 17:14:17 2013
+        - supports String and ArrayRef service in Proclet.pm
+
 0.20    Wed Jan 30 23:43:23 2013
         - use Log::Minimal env_debug
           requires Log::Minimal 0.14
