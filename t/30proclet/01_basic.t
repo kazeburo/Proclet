@@ -1,8 +1,8 @@
 use strict;
 use Test::More;
-use File::Temp qw/tempdir/;
+use File::Temp qw/tempdir tempfile/;
 
-my $logfile = File::Temp::tmpnam();
+my ($tmpfh, $logfile) = tempfile(UNLINK=>0,EXLOCK=>0);
 my $pid = fork();
 $ENV{PROCLET_TESTFILE} = $logfile;
 
