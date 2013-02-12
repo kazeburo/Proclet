@@ -144,7 +144,10 @@ sub run {
                 delete $running{$sid};
                 delete $pid2service{$exit_pid};
                 if ( $wait_all_children ) {
-                    kill 'TERM', $running{$LOGGER} if scalar keys %running == 1 && exists $running{$LOGGER};
+                    if ( scalar keys %running == 1 && exists $running{$LOGGER} ) {
+                        kill 'TERM', $running{$LOGGER};
+                        sleep(1) && kill 'TERM', $running{$LOGGER}; #safe
+                    }
                 }
             }
             debugf "[Proclet] on_child_reap: running => %s", \%running;
