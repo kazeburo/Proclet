@@ -14,7 +14,11 @@ if ( $pid == 0 ) {
     exit;
 }
 
-sleep 2;
+for (1..10) {
+    last if -s $logfile > 6;
+    sleep 1;
+}
+
 open(my $fh, $logfile);
 my %logok;
 while( <$fh> ) {
@@ -25,7 +29,7 @@ while( <$fh> ) {
 }
 close $fh;
 ok(!exists $logok{w1});
-is( scalar keys %{$logok{w2}}, 2);
+is( scalar keys %{$logok{w2}},2);
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);

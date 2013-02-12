@@ -14,7 +14,12 @@ if ( $pid == 0 ) {
     exit;
 }
 
-sleep 2;
+
+for (1..10) {
+    last if -s $logfile > 9;
+    sleep 1;
+}
+
 open(my $fh, $logfile);
 my %logok;
 while( <$fh> ) {
