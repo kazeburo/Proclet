@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.22    Tue Feb 12 12:33:01 2013
+        - bug fixed, select loop around logger
+        - fixed test. check logfile size instead of sleeping 
+
 0.21    Fri Feb 1 17:14:17 2013
         - supports String and ArrayRef service in Proclet.pm
 
