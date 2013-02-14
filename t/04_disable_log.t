@@ -29,8 +29,8 @@ my $stderr  = Capture::Tiny::capture_stderr {
 
 my $ok = 0;
 for my $l ( split /\n/, $stderr ) {
-    like $l, qr/^proclet disable log\sat/;
-    $ok++ if $l =~ m!^proclet\sat!;
+    like $l, qr/^proclet disable log at/;
+    $ok++ if $l =~ m!^proclet disable log at!;
 }
 ok($ok);
 done_testing();
