@@ -1,5 +1,8 @@
 Revision history for Perl extension Proclet
 
+0.23    Thu Feb 14 11::06:48 2013
+        - added enable_log_worker flag. for disable worker for fotmating logs
+
 0.22    Tue Feb 12 12:33:01 2013
         - bug fixed, select loop around logger
         - fixed test. check logfile size instead of sleeping 
