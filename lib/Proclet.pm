@@ -71,6 +71,12 @@ has 'logger' => (
     required => 0,
 );
 
+has 'enable_log_worker' => (
+    is => 'ro',
+    isa => 'Int',
+    default => 1,
+);
+
 my $rule = Data::Validator->new(
     code => { isa => 'Proclet::Service', coerce => 1 },
     worker => { isa => 'ServiceProcs', default => 1 },
@@ -107,19 +113,21 @@ sub run {
         for my $i ( 1..$worker ) {
             my $sid = $service->{tag} . '.' . $i;
             
-            $services{$sid} = {
-                %$service,
-                pipe => $self->create_pipe,
+            $services{$sid} = { %$service };
+            if ( $self->enable_log_worker ) {
+                $services{$sid}->{pipe} = $self->create_pipe;
             };
             push @services, $sid;
         }
     }
     croak('no services exists') if ! @services;
 
-    $services{$LOGGER} = {
-        code => $self->log_worker(),
-    };
-    push @services, $LOGGER;
+    if ( $self->enable_log_worker ) {
+        $services{$LOGGER} = {
+            code => $self->log_worker(),
+        };
+        push @services, $LOGGER;
+    }
 
     my $next;
     my %pid2service;
@@ -157,7 +165,7 @@ sub run {
             local $Log::Minimal::AUTODUMP = 1;
             debugf "[Proclet] before_fork: running => %s", \%running;
             my $pm = shift;
-            if ( ! exists $running{$LOGGER} ) {
+            if ( $self->enable_log_worker && ! exists $running{$LOGGER} ) {
                 $next = $LOGGER;
             }
             else {
@@ -189,7 +197,10 @@ sub run {
         $pm->start( sub {
             if ( defined $next ) {
                 my $service = delete $services{$next};
-                if ( $service->{pipe} ) {
+                if ( ! $self->enable_log_worker ) {
+                    $service->{code}->();
+                }
+                elsif ( $service->{pipe} ) {
                     undef %services;
                     my $logwh = $service->{pipe}->[1];
                     close $service->{pipe}->[0];
@@ -200,6 +211,7 @@ sub run {
                     $service->{code}->();
                 }
                 else {
+                    # logworker
                     $service->{code}->(\%services);
                 }
             }
@@ -359,6 +371,11 @@ colored log (default: 0)
   );
   
 Sets a callback to print stdout/stderr. uses warn by default.
+
+=item enable_log_worker: Bool
+
+enable worker for format logs. (default: 1)
+If disabled this option, cannot use logger opt too.
 
 =back
 
