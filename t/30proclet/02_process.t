@@ -15,7 +15,9 @@ if ( $pid == 0 ) {
 }
 
 for (1..10) {
-    last if -s $logfile > 6;
+    open( my $fh, $logfile);
+    my @lines = <$fh>;
+    last if @lines > 2;
     sleep 1;
 }
 
