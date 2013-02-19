@@ -10,6 +10,7 @@ use Mouse::Util::TypeConstraints;
 use Log::Minimal env_debug => 'PROCLET_DEBUG';
 use IO::Select;
 use Term::ANSIColor;
+use File::Which;
 
 subtype 'ServiceProcs'
     => as 'Int'
@@ -21,7 +22,8 @@ subtype 'Proclet::Service'
 coerce 'Proclet::Service'
     => from 'ArrayRef' => via {
         my @command = @{$_};
-        if ( @command == 1 && -x "/bin/bash" ) { unshift @command, "/bin/bash", "-c" }
+        my $bash = which("bash");
+        if ( @command == 1 && $bash ) { unshift @command, $bash, "-c" }
         sub {
             exec(@command);
             die $!
@@ -29,7 +31,7 @@ coerce 'Proclet::Service'
     }
     => from 'Str' => via {
         my @command = ($_);
-        if ( -x "/bin/bash" ) { unshift @command, "/bin/bash", "-c" }
+        if ( my $bash = which("bash") ) { unshift @command, $bash, "-c" }
         sub {
             exec @command;
             die $!
