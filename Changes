@@ -1,5 +1,9 @@
 Revision history for Perl extension Proclet
 
+0.25    Wed Feb 20 1:05:14 2013
+        - use which("bash") instead of absolute path.
+          some *BSD system install bash to /usr/bin
+
 0.24    Mon Feb 18 10:21:21 2013
         - fixed test. bug in checking size
 
