@@ -1,5 +1,7 @@
 Revision history for Perl extension Proclet
 
+{{$NEXT}}
+
 0.25    Wed Feb 20 1:05:14 2013
         - use which("bash") instead of absolute path.
           some *BSD system install bash to /usr/bin

@@ -1,0 +1,80 @@
+{
+   "abstract" : "minimalistic Supervisor",
+   "author" : [
+      "Masahiro Nagano <kazeburo {at} gmail.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Minilla/v0.5.3, CPAN::Meta::Converter version 2.130880",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Proclet",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples",
+         "author"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.36",
+            "List::MoreUtils" : "0",
+            "Parallel::Scoreboard" : "0",
+            "Test::More" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "CPAN::Meta" : "0",
+            "CPAN::Meta::Prereqs" : "0",
+            "Module::Build" : "0.38"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion" : "0.10108",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Data::Validator" : "0",
+            "File::Which" : "1.09",
+            "Getopt::Compact::WithCmd" : "0.20",
+            "Log::Minimal" : "0.14",
+            "Mouse" : "0",
+            "Parallel::Prefork" : "0.13",
+            "Term::ANSIColor" : "0",
+            "YAML::XS" : "0.38",
+            "parent" : "0"
+         }
+      }
+   },
+   "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/kazeburo/Proclet/issues"
+      },
+      "homepage" : "https://github.com/kazeburo/Proclet",
+      "repository" : {
+         "url" : "https://github.com/kazeburo/Proclet.git",
+         "web" : "https://github.com/kazeburo/Proclet"
+      }
+   },
+   "version" : "0.25",
+   "x_contributors" : [
+      "Masahiro Nagano <kazeburo@gmail.com>"
+   ]
+}
