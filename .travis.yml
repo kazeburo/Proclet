@@ -1,0 +1,8 @@
+language: perl
+before_script:
+  - cpanm --quiet -n Net::DNS::Lite
+perl:
+  - 5.12
+  - 5.14
+  - 5.16
+
