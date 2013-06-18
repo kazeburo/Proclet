@@ -53,7 +53,7 @@ my $go = Getopt::Compact::WithCmd->new(
                 ], 
                 [
                     [qw/p port/],
-                    'Specify which port to use as the base for this application. Should be a multiple of 1000',
+                    'Port number which used as the base for this application. Should be a multiple of 1000',
                     '=i',
                     \$opt{port},
                     { required => 0 }
@@ -195,6 +195,10 @@ An alternate Procfile to load, implies -d at the Procfile root
 
 Colored log
 
+=item -p, --port: Num
+
+Port number which used as the base for this application. Should be a multiple of 1000
+
 =back
 
 =head1 PROCFILE
@@ -218,13 +222,17 @@ If a B<.foreman> file exists in the current directory, default options will be r
   concurrency: alpha=0,bravo=1
   color: 1
 
+=head1 PORT ASSIGNMENT
+
+As same as foreman, proclet starts to assign from port 5000 by default. and assigns them in blocks of 100 per service in the order used in your Procfile. You can specify an alternate starting port number with the -p option.
+
 =head1 AUTHOR
 
 Masahiro Nagano E<lt>kazeburo {at} gmail.comE<gt>
 
 =head1 SEE ALSO
 
-L<Proclet>, L<https://github.com/ddollar/foreman>
+L<Proclet>, L<https://github.com/ddollar/foreman>, L<http://blog.daviddollar.org/2011/05/06/introducing-foreman.html>
 
 =head1 LICENSE
 

@@ -11,7 +11,7 @@ die $! if ! defined $pid;
 
 if ( $pid == 0 ) {
     chdir 't/30proclet/procfile';
-    exec $^X, '-I../../../lib','../../../bin/proclet', 'start','w2';
+    exec $^X, '-I../../../lib','../../../bin/proclet', 'start','-p','3000','w2';
     exit;
 }
 
@@ -36,7 +36,7 @@ while( <$fh> ) {
 close $fh;
 ok(!exists $logok{w1});
 is( scalar keys %{$logok{w2}},2);
-is_deeply( [ uniq sort @{$port{w2}} ], [5100,5101] );
+is_deeply( [ uniq sort @{$port{w2}} ], [3100,3101] );
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);

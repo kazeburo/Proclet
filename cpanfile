@@ -8,8 +8,7 @@ requires 'Term::ANSIColor';
 requires 'YAML::XS', '0.38';
 requires 'parent';
 
-on build => sub {
-    requires 'ExtUtils::MakeMaker', '6.36';
+on test => sub {
     requires 'List::MoreUtils';
     requires 'Parallel::Scoreboard';
     requires 'Test::More';
