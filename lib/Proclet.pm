@@ -14,30 +14,46 @@ use File::Which;
 
 subtype 'ServiceProcs'
     => as 'Int'
-    => where { $_ > 0 };
+    => where { $_ >= 0 };
+
+subtype 'ServicePort'
+    => as 'Int'
+    => where { $_ > 0 && $_ % 1000 == 0 };
 
 subtype 'Proclet::Service'
-    => as 'CodeRef'
+    => as 'HashRef'
     => message { "This argument must be String or ArrayRef or CodeRef" };
 coerce 'Proclet::Service'
     => from 'ArrayRef' => via {
-        my @command = @{$_};
-        my $bash = which("bash");
-        if ( @command == 1 && $bash ) { unshift @command, $bash, "-c" }
-        sub {
-            exec(@command);
-            die $!
-        }
+        my $command = $_;
+        +{generator => sub {
+            my @command = @{$command};
+            my $bash = which("bash");
+            if ( @command == 1 && $bash ) { unshift @command, $bash, "-c" }
+            sub {
+                exec(@command);
+                die $!
+            }
+        }}
     }
     => from 'Str' => via {
-        my @command = ($_);
-        if ( my $bash = which("bash") ) { unshift @command, $bash, "-c" }
-        sub {
-            exec @command;
-            die $!
-        }
+        my $o_command = $_;
+        +{generator => sub {
+            my $port = shift;
+            my $command = $o_command; #copy
+            $command =~ s/\$PORT/$port/g if $port;
+            my @command = ($command);
+            if ( my $bash = which("bash") ) { unshift @command, $bash, "-c" }
+            sub {
+                exec @command;
+                die $!
+            }
+        }}
+    }
+    => from 'CodeRef' => via {
+        my $command = $_;
+        +{generator => sub { $command }};
     };
-    
 
 no Mouse::Util::TypeConstraints;
 
@@ -79,6 +95,13 @@ has 'enable_log_worker' => (
     default => 1,
 );
 
+# for Procfile port assignment
+has '_base_port' => (
+    is => 'ro',
+    isa => 'ServicePort',
+    required => 0,
+);
+
 my $rule = Data::Validator->new(
     code => { isa => 'Proclet::Service', coerce => 1 },
     worker => { isa => 'ServiceProcs', default => 1 },
@@ -95,10 +118,16 @@ sub service {
     my $tag = ( exists $args->{tag} && defined $args->{tag} ) ? $args->{tag} : $self->{service_num};
     die "tag: $tag is already exists" if exists $self->{tags}->{$tag};
     $self->{tags}->{$tag} = 1;
+    my $port = 0;
+    if ( $self->{_base_port} ) {
+        $port = $self->{_base_port};
+        $self->{_base_port} += 100;
+    }
     push @{$self->_services}, {
         code => $args->{code},
         worker => $args->{worker},
         tag => $tag,
+        start_port => $port,
         color => $COLORS[ $self->{service_num} % @COLORS ],
     };
 }
@@ -112,10 +141,12 @@ sub run {
     my @services;
     for my $service ( @{$self->_services} ) {
         my $worker = $service->{worker};
-        for my $i ( 1..$worker ) {
+        for ( my $i = 1; $i <= $worker; $i++ ) {
             my $sid = $service->{tag} . '.' . $i;
-            
             $services{$sid} = { %$service };
+            my $port =  $services{$sid}{start_port} + $i - 1;
+            my $code_generator = $services{$sid}{code}{generator};
+            $services{$sid}{code} = $code_generator->($port);
             if ( $self->enable_log_worker ) {
                 $services{$sid}->{pipe} = $self->create_pipe;
             };

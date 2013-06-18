@@ -1,6 +1,7 @@
 use strict;
 use Test::More;
 use File::Temp qw/tempdir tempfile/;
+use List::MoreUtils qw/uniq/;
 
 my ($tmpfh, $logfile) = tempfile(UNLINK=>0,EXLOCK=>0);
 my $pid = fork();
@@ -24,15 +25,21 @@ for (1..10) {
 
 open(my $fh, $logfile);
 my %logok;
+my %port;
 while( <$fh> ) {
     chomp;
     my @l = split / /;
     $logok{$l[0]} ||= {};
     $logok{$l[0]}->{$l[1]} = 1;
+    $port{$l[0]} ||= [];
+    push @{$port{$l[0]}}, $l[2]; 
 }
 close $fh;
 is( scalar keys %{$logok{w1}}, 1);
 is( scalar keys %{$logok{w2}}, 2);
+
+is_deeply( [ uniq @{$port{w1}} ], [5000] );
+is_deeply( [ uniq sort @{$port{w2}} ], [5100,5101] );
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);

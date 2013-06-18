@@ -16,6 +16,7 @@ author_tests 'xt';
 
 test_requires 'Test::More';
 test_requires 'Parallel::Scoreboard';
+test_requires 'List::MoreUtils';
 
 install_script 'bin/proclet';
 auto_set_repository;

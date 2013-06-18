@@ -14,6 +14,7 @@ $opt{concurrency} = '';
 $opt{procfile} = 'Procfile';
 $opt{envfile} = '';
 $opt{color} = 0;
+$opt{port} = 5000;
 
 my $go = Getopt::Compact::WithCmd->new(
     name => 'proclet',
@@ -50,7 +51,13 @@ my $go = Getopt::Compact::WithCmd->new(
                     \$opt{color},
                     { required => 0 }
                 ], 
-
+                [
+                    [qw/p port/],
+                    'Specify which port to use as the base for this application. Should be a multiple of 1000',
+                    '=i',
+                    \$opt{port},
+                    { required => 0 }
+                ], 
             ],
         }
    },
@@ -85,16 +92,16 @@ if ( $cmd eq 'start' ) {
     my $services = load_procfile($opt{procfile});
     my $concurrency = parse_concurrency($opt{concurrency});
 
-    die 'no services defined' unless keys %$services;
+    die 'no services defined' unless @$services;
 
-    my $proclet = Proclet->new( color => $opt{color} );
-    for my $process ( keys %$services ) {
-        next if defined $args && $process ne $args;
+    my $proclet = Proclet->new( color => $opt{color}, _base_port => $opt{port} );
+    for my $service ( @$services ) {
+        my ($process, $command) = @$service;
         my $worker = exists $concurrency->{$process} ? $concurrency->{$process} : 1;
-        next if $worker == 0;
+        $worker = 0 if defined $args && $process ne $args;
         $proclet->service(
             tag => $process,
-            code => $services->{$process},
+            code => $command,
             worker => $worker, 
         );
     }
@@ -107,14 +114,14 @@ else {
 
 sub load_procfile {
     my $file = shift;
-    my %services;
+    my @services;
     open(my $fh, '<:utf8', $file) or die "cannot load procfile $file: $!";
     while (my $line = <$fh>) {
-        if (my ($name, $command) = ($line =~ /^([^:]+)\s*:\s*(.+)/)) {
-            $services{$name} = $command;
+        if (my ($name, $command) = ($line =~ /^([^:]+)\s*:\s*(.+)$/)) {
+            push @services, [$name, $command];
         }
     }
-    return \%services;
+    return \@services;
 }
 
 sub load_envfile {
