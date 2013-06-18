@@ -2,6 +2,11 @@ Revision history for Perl extension Proclet
 
 {{$NEXT}}
 
+0.30 2013-06-18T03:01:51Z
+
+        - support $PORT assignment in Procfile
+        - re-packaging with Minilla
+
 0.25    Wed Feb 20 1:05:14 2013
         - use which("bash") instead of absolute path.
           some *BSD system install bash to /usr/bin

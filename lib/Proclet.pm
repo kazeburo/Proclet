@@ -57,7 +57,7 @@ coerce 'Proclet::Service'
 
 no Mouse::Util::TypeConstraints;
 
-our $VERSION = '0.25';
+our $VERSION = '0.30';
 
 has '_services' => (
     is => 'ro',
