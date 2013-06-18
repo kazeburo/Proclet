@@ -1,6 +1,6 @@
 language: perl
 before_script:
-  - cpanm --quiet -n Net::DNS::Lite
+  - cpanm --quiet -n Capture::Tiny
 perl:
   - 5.12
   - 5.14

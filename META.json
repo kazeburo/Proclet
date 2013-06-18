@@ -57,7 +57,8 @@
          "requires" : {
             "List::MoreUtils" : "0",
             "Parallel::Scoreboard" : "0",
-            "Test::More" : "0"
+            "Test::More" : "0",
+            "Test::Requires" : "0"
          }
       }
    },

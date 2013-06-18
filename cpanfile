@@ -12,4 +12,5 @@ on test => sub {
     requires 'List::MoreUtils';
     requires 'Parallel::Scoreboard';
     requires 'Test::More';
+    requires 'Test::Requires';
 };
