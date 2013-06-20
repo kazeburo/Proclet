@@ -37,6 +37,7 @@ close $fh;
 ok(!exists $logok{w1});
 is( scalar keys %{$logok{w2}},2);
 is_deeply( [ uniq sort @{$port{w2}} ], [3100,3101] );
+ok(!exists $logok{w3});
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);
