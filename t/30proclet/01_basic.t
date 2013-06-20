@@ -37,9 +37,11 @@ while( <$fh> ) {
 close $fh;
 is( scalar keys %{$logok{w1}}, 1);
 is( scalar keys %{$logok{w2}}, 2);
+ok(!exists $logok{w3});
 
 is_deeply( [ uniq @{$port{w1}} ], [5000] );
 is_deeply( [ uniq sort @{$port{w2}} ], [5100,5101] );
+ok(!exists $port{w3});
 
 kill 'TERM', $pid;
 waitpid( $pid, 0);

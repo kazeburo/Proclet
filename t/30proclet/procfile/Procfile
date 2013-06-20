@@ -1,2 +1,3 @@
 w1: perl -e 'for(1..100){ open(my $fh, ">>:unix", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "w1 $$ $ARGV[0]\n"; close $fh; sleep 1};' $PORT
 w2: perl -e 'for(1..100){ open(my $fh, ">>:unix", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "w2 $$ $ARGV[0]\n"; close $fh; sleep 1};' $PORT
+#w3: perl -e 'for(1..100){ open(my $fh, ">>:unix", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "w3 $$ $ARGV[0]\n"; close $fh; sleep 1};' $PORT
