@@ -117,7 +117,7 @@ sub load_procfile {
     my @services;
     open(my $fh, '<:utf8', $file) or die "cannot load procfile $file: $!";
     while (my $line = <$fh>) {
-        next if $line =~ /^#/;
+        next if $line =~ /^\s*#/;
         if (my ($name, $command) = ($line =~ /^([^:]+)\s*:\s*(.+)$/)) {
             push @services, [$name, $command];
         }
