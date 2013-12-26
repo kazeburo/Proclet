@@ -39,6 +39,16 @@ Proclet - minimalistic Supervisor
         },
     );
 
+    $proclet->service(
+        code => sub {
+            scheduled_work();
+        },
+        tag => 'cron',
+        every => '0 12 * * *', #everyday at 12:00am
+    );
+
+
+
     $proclet->run;
 
 # DESCRIPTION
@@ -129,6 +139,20 @@ Logs from services are Displayed with timestamp and tag.
     - tag: Str
 
         Keyword for log. optional
+
+    - every: Str
+
+        Crontab like format. optional
+
+        If every option exists, Proclet execute the job as cron(8)
+
+            $proclet->service(
+                code => sub {
+                    scheduled_work();
+                },
+                tag => 'cron',
+                every => '0 12 * * *', #everyday at 12:00am
+            );
 
 - run
 
