@@ -46,9 +46,11 @@
             "Data::Validator" : "0",
             "File::Which" : "1.09",
             "Getopt::Compact::WithCmd" : "0.20",
+            "List::MoreUtils" : "0",
             "Log::Minimal" : "0.14",
             "Mouse" : "0",
             "Parallel::Prefork" : "0.13",
+            "Set::Crontab" : "1.03",
             "Term::ANSIColor" : "0",
             "YAML::XS" : "0.38",
             "parent" : "0"
@@ -70,7 +72,8 @@
       },
       "homepage" : "https://github.com/kazeburo/Proclet",
       "repository" : {
-         "url" : "https://github.com/kazeburo/Proclet.git",
+         "type" : "git",
+         "url" : "git://github.com/kazeburo/Proclet.git",
          "web" : "https://github.com/kazeburo/Proclet"
       }
    },

@@ -7,6 +7,8 @@ requires 'Parallel::Prefork', '0.13';
 requires 'Term::ANSIColor';
 requires 'YAML::XS', '0.38';
 requires 'parent';
+requires 'List::MoreUtils';
+requires 'Set::Crontab', '1.03';
 
 on test => sub {
     requires 'List::MoreUtils';
