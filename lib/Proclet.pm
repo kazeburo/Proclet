@@ -11,6 +11,7 @@ use Log::Minimal env_debug => 'PROCLET_DEBUG';
 use IO::Select;
 use Term::ANSIColor;
 use File::Which;
+use Proclet::Crontab;
 
 subtype 'ServiceProcs'
     => as 'Int'
@@ -54,6 +55,21 @@ coerce 'Proclet::Service'
         my $command = $_;
         +{generator => sub { $command }};
     };
+
+
+subtype 'Proclet::Scheduler'
+    => as 'CodeRef'
+    => message { "This argument must be String or CodeRef" };
+coerce 'Proclet::Scheduler'
+    => from 'Str' => via {
+        my $str = $_;
+        my $crontab = Proclet::Crontab->new($str);
+        sub {
+            my $unixtime = shift;
+            $crontab->match($unixtime);
+        }
+    };
+
 
 no Mouse::Util::TypeConstraints;
 
@@ -106,6 +122,7 @@ my $rule = Data::Validator->new(
     code => { isa => 'Proclet::Service', coerce => 1 },
     worker => { isa => 'ServiceProcs', default => 1 },
     tag => { isa => 'Str', optional => 1 },
+    every => { isa => 'Proclet::Scheduler', coerce => 1, optional => 1 },
 )->with('Method');
 
 our @COLORS = qw/green magenta blue yellow cyan/;
@@ -123,12 +140,14 @@ sub service {
         $port = $self->{_base_port};
         $self->{_base_port} += 100;
     }
+    my $cron = ( exists $args->{every} && defined $args->{every} ) ? $args->{every} : '';
     push @{$self->_services}, {
         code => $args->{code},
         worker => $args->{worker},
         tag => $tag,
         start_port => $port,
         color => $COLORS[ $self->{service_num} % @COLORS ],
+        cron => $cron
     };
 }
 
@@ -146,7 +165,11 @@ sub run {
             $services{$sid} = { %$service };
             my $port =  $services{$sid}{start_port} + $i - 1;
             my $code_generator = $services{$sid}{code}{generator};
-            $services{$sid}{code} = $code_generator->($port);
+            my $code = $code_generator->($port);
+            if ( $services{$sid}{cron} ) {
+                $code = $self->cron_worker($code,$services{$sid}{cron});
+            }
+            $services{$sid}{code} = $code;
             if ( $self->enable_log_worker ) {
                 $services{$sid}->{pipe} = $self->create_pipe;
             };
@@ -309,6 +332,48 @@ sub log_worker {
     };
 }
 
+sub current_min {
+    my $time = time;
+    $time = $time - ($time % 60);
+    $time;
+}
+
+sub cron_worker {
+    my ($self,$code,$cron) = @_;
+    sub {
+        debugf "[Proclet] start cron worker";
+        my $live = 1;
+        local $SIG{TERM} = sub { $live = 0 };
+        my $prev = current_min();
+        select undef, undef, undef, 1; ## no critic;
+        while ( $live ) {
+            my $now;
+            while ( $live ) {
+                $now = current_min();
+                last if $now != $prev;
+                select undef, undef, undef, 1; ## no critic;
+            }
+            last unless $live;
+            $prev = $now;
+            debugf "[Proclet] check cron";
+            next unless $cron->($now);
+            debugf "[Proclet] cron match and start child worker!";
+            my $pid = fork;
+            if ( ! defined $pid ) {
+                die "Died: fork failed: $!";
+            }
+            elsif ( $pid == 0 ) {
+                #child
+                $code->();
+                exit 0;
+            }
+            #parent
+            while (wait == -1) {}
+            debugf "[Proclet] finished child worker!";
+        }
+    };
+}
+
 __PACKAGE__->meta->make_immutable();
 1;
 __END__
@@ -353,6 +418,15 @@ Proclet - minimalistic Supervisor
           exec('/usr/bin/memcached','-p','11211');
       },
   );
+
+  $proclet->service(
+      code => sub {
+          scheduled_work();
+      },
+      tag => 'cron',
+      every => '0 12 * * *', #everyday at 12:00am
+  );
+
 
   $proclet->run;
 
@@ -451,6 +525,20 @@ Number of children to fork, default is "1"
 =item tag: Str
 
 Keyword for log. optional
+
+=item every: Str
+
+Crontab like format. optional
+
+If every option exists, Proclet execute the job as cron(8)
+
+  $proclet->service(
+      code => sub {
+          scheduled_work();
+      },
+      tag => 'cron',
+      every => '0 12 * * *', #everyday at 12:00am
+  );
 
 =back
 
