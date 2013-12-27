@@ -344,6 +344,7 @@ sub cron_worker {
         debugf "[Proclet] start cron worker";
         my $live = 1;
         local $SIG{TERM} = sub { $live = 0 };
+        local $SIG{CHLD} = 'IGNORE';
         my $prev = current_min();
         select undef, undef, undef, 1; ## no critic;
         while ( $live ) {
@@ -364,12 +365,12 @@ sub cron_worker {
             }
             elsif ( $pid == 0 ) {
                 #child
+                local $SIG{TERM} = 'DEFAULT';
+                local $SIG{CHLD} = 'DEFAULT';
                 $code->();
                 exit 0;
             }
             #parent
-            while (wait == -1) {}
-            debugf "[Proclet] finished child worker!";
         }
     };
 }
