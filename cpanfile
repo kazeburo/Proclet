@@ -1,3 +1,4 @@
+requires 'perl', '5.008001';
 requires 'Data::Validator';
 requires 'File::Which', '1.09';
 requires 'Getopt::Compact::WithCmd', '0.20';
@@ -7,8 +8,7 @@ requires 'Parallel::Prefork', '0.13';
 requires 'Term::ANSIColor';
 requires 'YAML::XS', '0.38';
 requires 'parent';
-requires 'List::MoreUtils';
-requires 'Set::Crontab', '1.03';
+requires 'Time::Crontab', '0.01';
 
 on test => sub {
     requires 'List::MoreUtils';
@@ -16,3 +16,4 @@ on test => sub {
     requires 'Test::More';
     requires 'Test::Requires';
 };
+

@@ -11,7 +11,7 @@ use Log::Minimal env_debug => 'PROCLET_DEBUG';
 use IO::Select;
 use Term::ANSIColor;
 use File::Which;
-use Proclet::Crontab;
+use Time::Crontab;
 
 subtype 'ServiceProcs'
     => as 'Int'
@@ -63,7 +63,7 @@ subtype 'Proclet::Scheduler'
 coerce 'Proclet::Scheduler'
     => from 'Str' => via {
         my $str = $_;
-        my $crontab = Proclet::Crontab->new($str);
+        my $crontab = Time::Crontab->new($str);
         sub {
             my $unixtime = shift;
             $crontab->match($unixtime);
