@@ -84,7 +84,7 @@ coerce 'Proclet::Scheduler'
 
 no Mouse::Util::TypeConstraints;
 
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 
 has '_services' => (
     is => 'ro',

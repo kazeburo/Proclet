@@ -2,6 +2,10 @@ Revision history for Perl extension Proclet
 
 {{$NEXT}}
 
+0.33 2014-03-12T15:20:48Z
+
+       - add start and exec message
+
 0.32 2013-12-27T04:39:01Z
 
         - support cron like job (EXPERIMENTAL)
