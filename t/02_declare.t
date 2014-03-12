@@ -9,6 +9,7 @@ $ENV{PROCLET_TESTFILE} = $logfile;
 die $! if ! defined $pid;
 
 if ( $pid == 0 ) {
+    close(STDERR);
     exec $^X, 't/DeclareProclet.pl';
     die $!;
 }

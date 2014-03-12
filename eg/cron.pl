@@ -8,6 +8,7 @@ use Log::Minimal;
 
 my $proclet = Proclet->new;
 $proclet->service(
+    tag => 'cron_sample',
     code => sub {
         warnf $0;
         sleep 5;

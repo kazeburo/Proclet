@@ -11,6 +11,7 @@ die $! if ! defined $pid;
 
 if ( $pid == 0 ) {
     chdir 't/30proclet/procfile';
+    close(STDERR);
     exec $^X, '-I../../../lib','../../../bin/proclet', 'start','-p','3000','w2';
     exit;
 }

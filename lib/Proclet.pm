@@ -12,6 +12,7 @@ use IO::Select;
 use Term::ANSIColor;
 use File::Which;
 use Time::Crontab;
+use String::ShellQuote;
 
 subtype 'ServiceProcs'
     => as 'Int'
@@ -29,9 +30,11 @@ coerce 'Proclet::Service'
         my $command = $_;
         +{generator => sub {
             my @command = @{$command};
+            my @o_command = @command;
             my $bash = which("bash");
             if ( @command == 1 && $bash ) { unshift @command, $bash, "-c" }
             sub {
+                warn "Exec command: ". shell_quote(@o_command)."\n";
                 exec(@command);
                 die $!
             }
@@ -44,16 +47,24 @@ coerce 'Proclet::Service'
             my $command = $o_command; #copy
             $command =~ s/\$PORT/$port/g if $port;
             my @command = ($command);
+            my @o_command = @command;
             if ( my $bash = which("bash") ) { unshift @command, $bash, "-c" }
             sub {
-                exec @command;
+                warn "Exec command: ". shell_quote(@o_command)."\n";
+                exec(@command);
                 die $!
             }
         }}
     }
     => from 'CodeRef' => via {
         my $command = $_;
-        +{generator => sub { $command }};
+        +{generator => sub {
+              my ($port,$tag) = @_;
+              sub {
+                  warn "Start callback: " . $tag  . "\n";
+                  $command->($port);
+              }
+          }};
     };
 
 
@@ -165,7 +176,7 @@ sub run {
             $services{$sid} = { %$service };
             my $port =  $services{$sid}{start_port} + $i - 1;
             my $code_generator = $services{$sid}{code}{generator};
-            my $code = $code_generator->($port);
+            my $code = $code_generator->($port, $service->{tag});
             if ( $services{$sid}{cron} ) {
                 $code = $self->cron_worker($code,$services{$sid}{cron});
             }
