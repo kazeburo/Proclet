@@ -9,6 +9,7 @@ requires 'Term::ANSIColor';
 requires 'YAML::XS', '0.38';
 requires 'parent';
 requires 'Time::Crontab', '0.01';
+requires 'String::ShellQuote';
 
 on test => sub {
     requires 'List::MoreUtils';
