@@ -49,6 +49,7 @@
             "Log::Minimal" : "0.14",
             "Mouse" : "0",
             "Parallel::Prefork" : "0.13",
+            "String::ShellQuote" : "0",
             "Term::ANSIColor" : "0",
             "Time::Crontab" : "0.01",
             "YAML::XS" : "0.38",
