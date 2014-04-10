@@ -16,6 +16,15 @@ service(
     'for(1..100){ open(my $fh, ">>:unix", $ENV{PROCLET_TESTFILE}) or die $!; print $fh "w2 $$\n"; close $fh; sleep 1}'
 );
 
+scheduled(
+    'c1',
+    '* * * * *',
+    $^X,
+    '-e',
+    'sleep 1;'
+);
+
+
 worker(
     'w2' => 2
 );

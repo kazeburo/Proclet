@@ -5,7 +5,7 @@ use warnings;
 use Proclet;
 use parent qw/Exporter/;
 
-our @EXPORT = qw/color env service worker run/;
+our @EXPORT = qw/color env service scheduled worker run/;
 
 our %REGISTRY;
 
@@ -36,7 +36,17 @@ sub service {
     my $code = ( ref($service[0]) && ref($service[0]) eq 'CODE' )
         ? $service[0] 
         : \@service;
-    push @{_proclet->{service}},[$tag,$code];
+    push @{_proclet->{service}},{ tag => $tag, code => $code };
+}
+
+sub scheduled {
+    my $tag = shift;
+    my $cron = shift;
+    my @service = @_;
+    my $code = ( ref($service[0]) && ref($service[0]) eq 'CODE' )
+        ? $service[0] 
+        : \@service;
+    push @{_proclet->{service}},{ tag => $tag, code => $code, every => $cron };
 }
 
 sub worker {
@@ -52,10 +62,9 @@ sub run() { ## no critic
     }
     my $proclet = Proclet->new(color => _proclet->{color});
     foreach my $service ( @{_proclet->{service}} ) {
-        my ($tag, $code) = @$service;
+        my $tag = $service->{tag};
         $proclet->service(
-            tag => $tag,
-            code => $code,
+            %$service,
             worker => ( exists _proclet->{worker}->{$tag} ) ? _proclet->{worker}->{$tag} : 1
         );
     }
@@ -83,6 +92,7 @@ Proclet::Declare - Declare interface to Proclet
   service('web', 'plackup -p 5963 app.psgi');
   service('memcached', '/usr/local/bin/memcached', '-p', '11211');
   service('worker', './bin/worker');
+  scheduled('tag', '0 12 * * *', sub { MyDailyWork->run });
 
   worker(
     'worker' => 5
@@ -125,6 +135,15 @@ Sets the service
   service('tag', sub { MyWorker->run });
   # exec command
   service('tag', '/usr/local/bin/memcached','-vv');
+
+=item scheduled
+
+scheduled job like cron
+
+  # coderef
+  scheduled('tag', '0 12 * * *', sub { MyDailyWork->run });
+  # exec command
+  scheduled('tag', '0 12 * * *', 'my_daily_job','-execute');
 
 =item worker
 
