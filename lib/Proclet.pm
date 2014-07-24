@@ -29,12 +29,13 @@ coerce 'Proclet::Service'
     => from 'ArrayRef' => via {
         my $command = $_;
         +{generator => sub {
+            my $notice = shift;
             my @command = @{$command};
             my @o_command = @command;
             my $bash = which("bash");
             if ( @command == 1 && $bash ) { unshift @command, $bash, "-c" }
             sub {
-                warn "Exec command: ". shell_quote(@o_command)."\n";
+                infof "Exec command: ". shell_quote(@o_command)."\n" if $notice;
                 exec(@command);
                 die $!
             }
@@ -43,14 +44,14 @@ coerce 'Proclet::Service'
     => from 'Str' => via {
         my $o_command = $_;
         +{generator => sub {
-            my $port = shift;
+            my ($notice, $port, $tag) = @_;
             my $command = $o_command; #copy
             $command =~ s/\$PORT/$port/g if $port;
             my @command = ($command);
             my @o_command = @command;
             if ( my $bash = which("bash") ) { unshift @command, $bash, "-c" }
             sub {
-                warn "Exec command: ". shell_quote(@o_command)."\n";
+                infof "Exec command: ". shell_quote(@o_command)."\n" if $notice;
                 exec(@command);
                 die $!
             }
@@ -59,9 +60,9 @@ coerce 'Proclet::Service'
     => from 'CodeRef' => via {
         my $command = $_;
         +{generator => sub {
-              my ($port,$tag) = @_;
+              my ($notice, $port, $tag) = @_;
               sub {
-                  warn "Start callback: " . $tag  . "\n";
+                  infof "Start callback: " . $tag  . "\n" if $notice;
                   $command->($port);
               }
           }};
@@ -122,6 +123,12 @@ has 'enable_log_worker' => (
     default => 1,
 );
 
+has 'exec_notice' => (
+    is => 'ro',
+    isa => 'Int',
+    default => 1,
+);
+
 # for Procfile port assignment
 has '_base_port' => (
     is => 'ro',
@@ -176,7 +183,7 @@ sub run {
             $services{$sid} = { %$service };
             my $port =  $services{$sid}{start_port} + $i - 1;
             my $code_generator = $services{$sid}{code}{generator};
-            my $code = $code_generator->($port, $service->{tag});
+            my $code = $code_generator->($self->exec_notice, $port, $service->{tag});
             if ( $services{$sid}{cron} ) {
                 $code = $self->cron_worker($code,$services{$sid}{cron});
             }
@@ -495,6 +502,14 @@ Sets a callback to print stdout/stderr. uses warn by default.
 
 enable worker for format logs. (default: 1)
 If disabled this option, cannot use logger opt too.
+
+=item exec_notice: Bool
+
+enable start and exec notice message like
+
+  16:38:12 worker.1 | Start callback: worker
+
+(default: 1)
 
 =back
 

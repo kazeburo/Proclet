@@ -29,7 +29,7 @@ my $stderr  = Capture::Tiny::capture_stderr {
 
 my $ok = 0;
 for my $l ( split /\n/, $stderr ) {
-    like $l, qr/^(Start callback|proclet disable log at)/;
+    like $l, qr/^(\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d \[INFO\] Start callback|proclet disable log at)/;
     $ok++ if $l =~ m!^proclet disable log at!;
 }
 ok($ok);

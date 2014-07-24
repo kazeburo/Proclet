@@ -48,7 +48,6 @@ Proclet - minimalistic Supervisor
     );
 
 
-
     $proclet->run;
 
 # DESCRIPTION
@@ -101,6 +100,14 @@ Logs from services are Displayed with timestamp and tag.
 
         enable worker for format logs. (default: 1)
         If disabled this option, cannot use logger opt too.
+
+    - exec\_notice: Bool
+
+        enable start and exec notice message like
+
+            16:38:12 worker.1 | Start callback: worker
+
+        (default: 1)
 
 - service
 
@@ -164,8 +171,8 @@ Masahiro Nagano <kazeburo {at} gmail.com>
 
 # SEE ALSO
 
-[Proc::Launcher::Manager](http://search.cpan.org/perldoc?Proc::Launcher::Manager), related module
-[Parallel::Prefork](http://search.cpan.org/perldoc?Parallel::Prefork), Proclet used internally
+[Proc::Launcher::Manager](https://metacpan.org/pod/Proc::Launcher::Manager), related module
+[Parallel::Prefork](https://metacpan.org/pod/Parallel::Prefork), Proclet used internally
 
 # LICENSE
 
