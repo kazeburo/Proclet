@@ -2,6 +2,10 @@ Revision history for Perl extension Proclet
 
 {{$NEXT}}
 
+0.35 2014-07-24T05:31:01Z
+
+       - add opt to disable exec message
+
 0.34 2014-04-10T15:33:21Z
 
        - support cron like job in Declare (EXPERIMENTAL)
