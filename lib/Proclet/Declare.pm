@@ -34,7 +34,7 @@ sub service {
     my $tag = shift;
     my @service = @_;
     my $code = ( ref($service[0]) && ref($service[0]) eq 'CODE' )
-        ? $service[0] 
+        ? $service[0]
         : \@service;
     push @{_proclet->{service}},{ tag => $tag, code => $code };
 }
@@ -44,7 +44,7 @@ sub scheduled {
     my $cron = shift;
     my @service = @_;
     my $code = ( ref($service[0]) && ref($service[0]) eq 'CODE' )
-        ? $service[0] 
+        ? $service[0]
         : \@service;
     push @{_proclet->{service}},{ tag => $tag, code => $code, every => $cron };
 }
@@ -82,7 +82,7 @@ Proclet::Declare - Declare interface to Proclet
 =head1 SYNOPSIS
 
   use Proclet::Declare;
-  
+
   color;
   env(
     DEBUG => 1,
@@ -97,7 +97,7 @@ Proclet::Declare - Declare interface to Proclet
   worker(
     'worker' => 5
   );
-  
+
   run;
 
 =head1 DESCRIPTION
@@ -122,7 +122,7 @@ default: disabled
 
 Environment values
 
-  worker(
+  env(
       FOO => 'abc'
       BAR => 'efg'
   );
